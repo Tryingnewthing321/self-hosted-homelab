@@ -1,124 +1,170 @@
 # Self-Hosted Homelab
 
-A personal self-hosted cloud infrastructure project built using an old Lenovo laptop running Ubuntu Server.
-
-The goal of this project is to build, manage, and maintain a private cloud environment using open-source technologies, containerization, and secure remote access.
+A personal homelab built using an old Lenovo laptop, Ubuntu Server, Docker, and Tailscale. This project documents my journey of building and managing my own self-hosted infrastructure, with private access to personal photos and files from anywhere.
 
 ## Project Overview
 
-This homelab runs multiple self-hosted services, allowing private photo management, file storage, remote administration, and infrastructure management without depending entirely on third-party cloud platforms.
+The goal of this project was to repurpose an old laptop into a personal home server and learn practical system administration, containerisation, networking, remote access, storage management, and self-hosting.
 
-## Hardware
-
-| Component | Configuration |
-|---|---|
-| Host device | Lenovo laptop |
-| Operating System | Ubuntu Server 24.04 LTS |
-| Storage | Approximately 1 TB physical drive |
-| Root filesystem | Approximately 914 GB |
-| Network access | Ethernet/Wi-Fi |
- 
-## Technology Stack
-
-| Technology | Purpose |
-|---|---|
-| Ubuntu Server | Host operating system |
-| Docker | Containerization |
-| Docker Compose | Multi-container deployment |
-| Portainer CE | Container management |
-| Tailscale | Secure remote access |
-| Immich | Self-hosted photo and video management |
-| Nextcloud | Private cloud storage |
-| PostgreSQL | Immich database |
-| MariaDB | Nextcloud database |
-| OpenSSH | Remote server administration |
+The server runs multiple services using Docker and Docker Compose, with Portainer for container management and Tailscale for secure remote connectivity.
 
 ## Architecture
 
+**Infrastructure overview:**
+
+- **Host machine:** Lenovo laptop
+- **Operating system:** Ubuntu Server 24.04 LTS
+- **Containerisation:** Docker Engine and Docker Compose
+- **Container management:** Portainer CE
+- **Remote access:** Tailscale VPN
+- **Photo management:** Immich
+- **Cloud storage:** Nextcloud
+- **Database:** MariaDB and PostgreSQL
+
+## Services
+
+| Service | Purpose | Access |
+|---|---|---|
+| Immich | Self-hosted photo and video management | Port 2283 |
+| Nextcloud | Personal cloud storage and file management | Port 8080 |
+| Portainer | Docker container and stack management | Port 9443 |
+| Tailscale | Private remote access to the server | VPN |
+
+Services are hosted on the Ubuntu server and accessed through the private network or Tailscale.
+
+## Hardware and Storage
+
+The project uses an old Lenovo laptop as its server.
+
+- Approximately 1 TB physical storage
+- Ubuntu LVM storage configuration
+- Root logical volume expanded to utilise available storage
+- Dedicated directories for Immich data and server backups
+
+### Storage layout
+
 ```text
-                 Remote Devices
-                 (Laptop / Phone)
-                        |
-                        |
-                    Tailscale
-                        |
-                        |
-              Ubuntu Server (Lenovo)
-                        |
-                  Docker Engine
-                        |
-       +----------------+----------------+
-       |                |                |
-    Immich           Nextcloud        Portainer
-       |                |                |
-   PostgreSQL         MariaDB        Management UI
-       |
- Photo & Video
-   Storage
+/srv/
+├── immich/
+│   ├── library/
+│   ├── postgres/
+│   └── profile/
+├── backups/
+├── documents/
+├── nextcloud/
+└── vaultwarden/
 ```
 
-## Key Features
+## Remote Access
 
-- Private cloud infrastructure hosted on personal hardware.
-- Self-hosted photo and video management using Immich.
-- File storage and synchronization using Nextcloud.
-- Containerized application deployment using Docker.
-- Centralized container management through Portainer.
-- Secure remote connectivity using Tailscale.
-- SSH-based remote server administration.
-- Expanded LVM storage capacity.
-- Automated Nextcloud backup using shell scripts and cron.
+Tailscale provides secure remote connectivity to the homelab without requiring traditional router port forwarding.
+
+This allows authorised devices connected to the same Tailscale network to access services hosted on the server.
+
+## Backup and Recovery
+
+A custom Bash script automates Nextcloud backups.
+
+The backup process:
+
+1. Enables Nextcloud maintenance mode.
+2. Archives the Nextcloud Docker volume.
+3. Exports the MariaDB database using `mariadb-dump`.
+4. Disables maintenance mode after the script exits.
+
+Backups are stored in timestamped directories under `/srv/backups/`.
+
+A root cron job schedules the backup daily.
+
+See [`scripts/`](scripts/) and [`documentation/backup-configuration.md`](documentation/backup-configuration.md).
 
 ## Repository Structure
 
 ```text
 self-hosted-homelab/
 │
-├── README.md
-│
 ├── architecture/
 │
 ├── docker/
+│   ├── immich/
+│   │   ├── docker-compose.yml
+│   │   ├── .env.example
+│   │   └── README.md
+│   │
+│   └── nextcloud/
+│       ├── docker-compose.yml
+│       ├── .env.example
+│       └── README.md
 │
 ├── documentation/
+│   ├── backup-configuration.md
+│   ├── docker-setup.md
+│   ├── networking-and-ssh.md
+│   ├── server-setup.md
+│   ├── storage-and-lvm.md
+│   ├── tailscale-setup.md
+│   └── ubuntu-installation.md
 │
-└── scripts/
+├── scripts/
+│   ├── README.md
+│   └── nextcloud-backup.sh
+│
+├── .gitignore
+└── README.md
 ```
+
+## Documentation
+
+Detailed setup and configuration guides are available in the [`documentation/`](documentation/) directory.
+
+| Document | Description |
+|---|---|
+| [Ubuntu Installation](documentation/ubuntu-installation.md) | Ubuntu Server installation |
+| [Server Setup](documentation/server-setup.md) | Initial server configuration |
+| [Docker Setup](documentation/docker-setup.md) | Docker and Portainer setup |
+| [Networking and SSH](documentation/networking-and-ssh.md) | Network configuration and remote shell access |
+| [Tailscale Setup](documentation/tailscale-setup.md) | Private remote connectivity |
+| [Storage and LVM](documentation/storage-and-lvm.md) | Storage expansion and logical volume management |
+| [Backup Configuration](documentation/backup-configuration.md) | Nextcloud backup and automation |
 
 ## Security Considerations
 
-Security is an important part of this project.
+- Remote access is provided through Tailscale.
+- Environment variables and credentials are kept outside the public repository.
+- Example environment files contain placeholders, not actual passwords.
+- Database backups and personal files are not committed to GitHub.
+- Avoid exposing administrative interfaces directly to the public internet.
 
-- Remote access is configured through Tailscale.
-- SSH is used for remote administration.
-- Application credentials and database passwords are kept outside the public repository.
-- Environment files containing secrets are excluded from version control.
-- Backup files and personal data are not published.
-
-## Learning Outcomes
+## Technologies Learned
 
 Through this project, I gained practical experience with:
 
-- Linux server administration.
-- Ubuntu installation and configuration.
-- Docker and container orchestration.
-- Docker Compose and Portainer.
-- Linux networking and SSH.
-- VPN-based remote access.
-- Linux filesystem management and LVM.
-- Database-backed self-hosted applications.
-- Backup automation using Bash and cron.
+- Linux system administration
+- Ubuntu Server installation and configuration
+- Docker and Docker Compose
+- Portainer stack management
+- Linux storage management and LVM
+- SSH remote administration
+- VPN-based networking with Tailscale
+- Self-hosted applications and database management
+- Bash scripting and cron automation
+- Backup and recovery fundamentals
+- Git and GitHub documentation
 
 ## Future Improvements
 
-- Infrastructure monitoring and resource utilization dashboards.
-- Improved backup and recovery strategy.
-- Reverse proxy and HTTPS configuration.
-- Additional self-hosted services.
-- Infrastructure documentation and deployment automation.
+- Implement automated backup retention and off-server backup copies.
+- Test full Nextcloud restoration.
+- Improve server monitoring and resource utilisation.
+- Strengthen credential management and access controls.
+- Expand infrastructure documentation and architecture diagrams.
+
+## Disclaimer
+
+This repository documents my personal homelab setup for learning and experimentation. Configuration files are provided as references and may require modification for different hardware, network environments, and deployments.
+
+Always review environment variables, credentials, storage paths, and network exposure before deploying.
 
 ---
 
-**Status:** Active homelab project.
-
-Built and maintained as a hands-on learning project in Linux, networking, Docker, and self-hosted infrastructure.
+**Built as a hands-on learning project in Linux, Docker, networking, and self-hosted infrastructure.**
