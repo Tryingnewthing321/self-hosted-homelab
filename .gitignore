@@ -1,0 +1,19 @@
+# Environment files and secrets
+.env
+.env.*
+!.env.example
+**/.env
+**/.env.*
+**/!.env.example
+
+# Database backups
+*.sql
+*.sql.gz
+*.dump
+
+# Private keys
+*.pem
+*.key
+
+# Logs
+*.log
