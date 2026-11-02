@@ -8,6 +8,14 @@ The goal of this project was to repurpose an old laptop into a personal home ser
 
 The server runs multiple services using Docker and Docker Compose, with Portainer for container management and Tailscale for secure remote connectivity.
 
+
+## Architecture Diagram
+
+The following diagram illustrates the overall homelab infrastructure, including Docker services, databases, storage, and remote connectivity.
+
+[View the complete architecture diagram](architecture/homelab-architecture.md).
+
+
 ## Architecture
 
 **Infrastructure overview:**
